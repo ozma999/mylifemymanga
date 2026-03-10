@@ -1,4 +1,4 @@
-const API_KEY="여기에_API_KEY";
+const API_KEY="ttbriotlunar0022001";
 
 const searchBtn=document.getElementById("searchBtn");
 const results=document.getElementById("results");
