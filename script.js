@@ -1,31 +1,36 @@
-const resultsDiv = document.getElementById("results");
-const gridDiv = document.getElementById("grid");
+const resultsDiv=document.getElementById("results");
+const gridDiv=document.getElementById("grid");
 
-let selected = [];
+let selected=[];
 
 async function searchBooks(){
 
-const query = document.getElementById("searchInput").value;
+const query=document.getElementById("searchInput").value;
 
-const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=12`;
+const url=`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=12`;
 
-const res = await fetch(url);
-const data = await res.json();
+const res=await fetch(url);
+const data=await res.json();
 
 resultsDiv.innerHTML="";
 
 data.items.forEach(book=>{
 
-const img = book.volumeInfo.imageLinks?.thumbnail;
+let img=book.volumeInfo.imageLinks?.thumbnail;
 
 if(!img) return;
+
+img=img.replace("http://","https://");
+
+img=img.replace(
+"books.google.com",
+"books.googleusercontent.com"
+);
 
 const el=document.createElement("img");
 el.src=img;
 
-el.onclick=()=>{
-addToGrid(img);
-};
+el.onclick=()=>addToGrid(img);
 
 resultsDiv.appendChild(el);
 
@@ -39,28 +44,59 @@ if(selected.length>=9) return;
 
 selected.push(img);
 
-const el=document.createElement("img");
-el.src=img;
+const item=document.createElement("div");
+item.className="gridItem";
 
-gridDiv.appendChild(el);
+const image=document.createElement("img");
+image.src=img;
+
+const remove=document.createElement("button");
+remove.className="removeBtn";
+remove.innerText="×";
+
+remove.onclick=()=>{
+
+gridDiv.removeChild(item);
+
+selected=selected.filter(i=>i!==img);
+
+};
+
+item.appendChild(image);
+item.appendChild(remove);
+
+gridDiv.appendChild(item);
+
+}
+
+function clearGrid(){
+
+gridDiv.innerHTML="";
+selected=[];
 
 }
 
 function saveImage(){
 
 if(selected.length<9){
+
 alert("9개를 선택하세요");
+
 return;
+
 }
 
 const canvas=document.getElementById("canvas");
 const ctx=canvas.getContext("2d");
+
+ctx.clearRect(0,0,900,900);
 
 let loaded=0;
 
 selected.forEach((src,i)=>{
 
 const img=new Image();
+
 img.crossOrigin="anonymous";
 img.src=src;
 
@@ -76,8 +112,10 @@ loaded++;
 if(loaded===9){
 
 const link=document.createElement("a");
+
 link.download="top9.png";
 link.href=canvas.toDataURL();
+
 link.click();
 
 }
@@ -96,7 +134,7 @@ const url=`${location.origin}?data=${data}`;
 
 navigator.clipboard.writeText(url);
 
-alert("URL 복사됨");
+alert("URL copied");
 
 }
 
@@ -110,15 +148,12 @@ if(!data) return;
 
 selected=JSON.parse(decodeURIComponent(data));
 
-selected.forEach(img=>{
-
-const el=document.createElement("img");
-el.src=img;
-
-gridDiv.appendChild(el);
-
-});
+selected.forEach(img=>addToGrid(img));
 
 }
 
 loadFromURL();
+
+new Sortable(gridDiv,{
+animation:150
+});

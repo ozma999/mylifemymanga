@@ -4,14 +4,17 @@
 <meta charset="UTF-8">
 <title>Top 9 Manga Generator</title>
 <link rel="stylesheet" href="style.css">
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+
 </head>
 
 <body>
 
 <h1>Top 9 Manga Generator</h1>
 
-<div class="search">
-<input id="searchInput" placeholder="만화 제목 입력">
+<div class="searchBox">
+<input id="searchInput" placeholder="만화 제목 검색">
 <button onclick="searchBooks()">검색</button>
 </div>
 
@@ -21,9 +24,10 @@
 
 <div id="grid" class="grid"></div>
 
-<div class="buttons">
+<div class="controls">
 <button onclick="saveImage()">Save Image</button>
 <button onclick="shareURL()">Share URL</button>
+<button onclick="clearGrid()">Reset</button>
 </div>
 
 <canvas id="canvas" width="900" height="900"></canvas>
