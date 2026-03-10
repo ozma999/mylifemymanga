@@ -1,129 +1,124 @@
-const API_KEY="ttbriotlunar0022001";
+const resultsDiv = document.getElementById("results");
+const gridDiv = document.getElementById("grid");
 
-const searchBtn=document.getElementById("searchBtn");
-const results=document.getElementById("results");
-const grid=document.getElementById("grid");
+let selected = [];
 
-let selected=[];
+async function searchBooks(){
 
-searchBtn.onclick=search;
+const query = document.getElementById("searchInput").value;
 
-function search(){
+const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=12`;
 
-const q=document.getElementById("searchInput").value;
+const res = await fetch(url);
+const data = await res.json();
 
-fetch(`https://www.aladin.co.kr/ttb/api/ItemSearch.aspx?ttbkey=${API_KEY}&Query=${q}&QueryType=Title&MaxResults=10&start=1&SearchTarget=Book&output=js&Version=20131101`)
+resultsDiv.innerHTML="";
 
-.then(r=>r.json())
+data.items.forEach(book=>{
 
-.then(data=>{
+const img = book.volumeInfo.imageLinks?.thumbnail;
 
-results.innerHTML="";
+if(!img) return;
 
-data.item.forEach(b=>{
+const el=document.createElement("img");
+el.src=img;
 
-const img=document.createElement("img");
+el.onclick=()=>{
+addToGrid(img);
+};
 
-img.src=b.cover;
-
-img.onclick=()=>add(b.cover);
-
-results.appendChild(img);
-
-});
+resultsDiv.appendChild(el);
 
 });
 
 }
 
-function add(src){
+function addToGrid(img){
 
 if(selected.length>=9) return;
 
-selected.push(src);
+selected.push(img);
 
-render();
+const el=document.createElement("img");
+el.src=img;
 
-}
-
-function render(){
-
-grid.innerHTML="";
-
-selected.forEach((src,i)=>{
-
-const slot=document.createElement("div");
-
-slot.className="slot";
-
-const img=document.createElement("img");
-
-img.src=src;
-
-img.crossOrigin="anonymous";
-
-slot.appendChild(img);
-
-grid.appendChild(slot);
-
-});
+gridDiv.appendChild(el);
 
 }
 
-new Sortable(grid,{
+function saveImage(){
 
-animation:150,
-
-onEnd:()=>{
-
-selected=[...grid.querySelectorAll("img")].map(i=>i.src);
-
+if(selected.length<9){
+alert("9개를 선택하세요");
+return;
 }
-
-});
-
-document.getElementById("saveBtn").onclick=function(){
 
 const canvas=document.getElementById("canvas");
-
 const ctx=canvas.getContext("2d");
-
-const imgs=grid.querySelectorAll("img");
 
 let loaded=0;
 
-imgs.forEach((img,i)=>{
+selected.forEach((src,i)=>{
+
+const img=new Image();
+img.crossOrigin="anonymous";
+img.src=src;
+
+img.onload=()=>{
 
 const x=(i%3)*300;
-
 const y=Math.floor(i/3)*300;
 
-const temp=new Image();
-
-temp.crossOrigin="anonymous";
-
-temp.src=img.src;
-
-temp.onload=function(){
-
-ctx.drawImage(temp,x,y,300,300);
+ctx.drawImage(img,x,y,300,300);
 
 loaded++;
 
-if(loaded===imgs.length){
+if(loaded===9){
 
-const a=document.createElement("a");
-
-a.download="top9manga.png";
-
-a.href=canvas.toDataURL();
-
-a.click();
+const link=document.createElement("a");
+link.download="top9.png";
+link.href=canvas.toDataURL();
+link.click();
 
 }
 
-}
+};
 
 });
 
 }
+
+function shareURL(){
+
+const data=encodeURIComponent(JSON.stringify(selected));
+
+const url=`${location.origin}?data=${data}`;
+
+navigator.clipboard.writeText(url);
+
+alert("URL 복사됨");
+
+}
+
+function loadFromURL(){
+
+const params=new URLSearchParams(location.search);
+
+const data=params.get("data");
+
+if(!data) return;
+
+selected=JSON.parse(decodeURIComponent(data));
+
+selected.forEach(img=>{
+
+const el=document.createElement("img");
+el.src=img;
+
+gridDiv.appendChild(el);
+
+});
+
+}
+
+loadFromURL();
