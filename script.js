@@ -1,36 +1,34 @@
-const resultsDiv=document.getElementById("results");
-const gridDiv=document.getElementById("grid");
+const resultsDiv = document.getElementById("results");
+const gridDiv = document.getElementById("grid");
 
-let selected=[];
+let selected = [];
 
 async function searchBooks(){
 
-const query=document.getElementById("searchInput").value;
+const q = document.getElementById("searchInput").value;
 
-const url=`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=12`;
+const res = await fetch(
+"https://www.googleapis.com/books/v1/volumes?q="+encodeURIComponent(q)
+);
 
-const res=await fetch(url);
-const data=await res.json();
+const data = await res.json();
 
 resultsDiv.innerHTML="";
 
 data.items.forEach(book=>{
 
-let img=book.volumeInfo.imageLinks?.thumbnail;
+const img =
+book.volumeInfo.imageLinks?.thumbnail ||
+book.volumeInfo.imageLinks?.smallThumbnail;
 
 if(!img) return;
 
-img=img.replace("http://","https://");
+const el = document.createElement("img");
+el.src = img;
 
-img=img.replace(
-"books.google.com",
-"books.googleusercontent.com"
-);
-
-const el=document.createElement("img");
-el.src=img;
-
-el.onclick=()=>addToGrid(img);
+el.addEventListener("click",function(){
+addToGrid(this.src);
+});
 
 resultsDiv.appendChild(el);
 
@@ -44,116 +42,103 @@ if(selected.length>=9) return;
 
 selected.push(img);
 
-const item=document.createElement("div");
-item.className="gridItem";
-
-const image=document.createElement("img");
-image.src=img;
-
-const remove=document.createElement("button");
-remove.className="removeBtn";
-remove.innerText="×";
-
-remove.onclick=()=>{
-
-gridDiv.removeChild(item);
-
-selected=selected.filter(i=>i!==img);
-
-};
-
-item.appendChild(image);
-item.appendChild(remove);
-
-gridDiv.appendChild(item);
+renderGrid();
 
 }
 
-function clearGrid(){
+function renderGrid(){
 
 gridDiv.innerHTML="";
-selected=[];
+
+selected.forEach((img,index)=>{
+
+const el = document.createElement("img");
+
+el.src = img;
+
+el.title="click to remove";
+
+el.addEventListener("click",function(){
+
+selected.splice(index,1);
+
+renderGrid();
+
+});
+
+gridDiv.appendChild(el);
+
+});
 
 }
 
 function saveImage(){
 
-if(selected.length<9){
-
-alert("9개를 선택하세요");
-
-return;
-
-}
-
 const canvas=document.getElementById("canvas");
 const ctx=canvas.getContext("2d");
 
-ctx.clearRect(0,0,900,900);
-
-let loaded=0;
+const size=300;
 
 selected.forEach((src,i)=>{
 
 const img=new Image();
-
 img.crossOrigin="anonymous";
-img.src=src;
 
-img.onload=()=>{
+img.onload=function(){
 
-const x=(i%3)*300;
-const y=Math.floor(i/3)*300;
+const x=(i%3)*size;
+const y=Math.floor(i/3)*size;
 
-ctx.drawImage(img,x,y,300,300);
-
-loaded++;
-
-if(loaded===9){
-
-const link=document.createElement("a");
-
-link.download="top9.png";
-link.href=canvas.toDataURL();
-
-link.click();
-
-}
+ctx.drawImage(img,x,y,size,size);
 
 };
 
+img.src=src;
+
 });
+
+setTimeout(()=>{
+
+const link=document.createElement("a");
+link.download="top9manga.png";
+link.href=canvas.toDataURL();
+link.click();
+
+},1000);
+
+}
+
+function resetGrid(){
+
+selected=[];
+renderGrid();
 
 }
 
 function shareURL(){
 
-const data=encodeURIComponent(JSON.stringify(selected));
+const encoded=btoa(JSON.stringify(selected));
 
-const url=`${location.origin}?data=${data}`;
+const url=location.origin+location.pathname+"?data="+encoded;
 
 navigator.clipboard.writeText(url);
 
-alert("URL copied");
+alert("URL copied!");
 
 }
 
-function loadFromURL(){
+window.onload=function(){
 
 const params=new URLSearchParams(location.search);
 
 const data=params.get("data");
 
-if(!data) return;
+if(data){
 
-selected=JSON.parse(decodeURIComponent(data));
+selected=JSON.parse(atob(data));
 
-selected.forEach(img=>addToGrid(img));
+renderGrid();
 
 }
 
-loadFromURL();
-
-new Sortable(gridDiv,{
-animation:150
-});
+}

@@ -1,11 +1,87 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
 <meta charset="UTF-8">
 <title>Top 9 Manga Generator</title>
-<link rel="stylesheet" href="style.css">
 
-<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<style>
+
+body{
+font-family:sans-serif;
+background:#f4f4f4;
+text-align:center;
+padding:20px;
+}
+
+h1{
+margin-bottom:20px;
+}
+
+.searchBox{
+margin-bottom:20px;
+}
+
+input{
+padding:8px;
+font-size:16px;
+width:220px;
+}
+
+button{
+padding:8px 14px;
+margin:5px;
+font-size:14px;
+cursor:pointer;
+}
+
+.results{
+display:flex;
+flex-wrap:wrap;
+justify-content:center;
+gap:10px;
+margin-bottom:30px;
+}
+
+.results img{
+width:110px;
+height:160px;
+object-fit:cover;
+border-radius:6px;
+cursor:pointer;
+transition:transform 0.15s;
+}
+
+.results img:hover{
+transform:scale(1.05);
+}
+
+.grid{
+display:grid;
+grid-template-columns:repeat(3,160px);
+gap:12px;
+justify-content:center;
+margin-top:20px;
+margin-bottom:20px;
+}
+
+.grid img{
+width:160px;
+height:220px;
+object-fit:cover;
+border-radius:8px;
+cursor:pointer;
+}
+
+.controls{
+margin-top:10px;
+}
+
+canvas{
+display:none;
+}
+
+</style>
 
 </head>
 
@@ -14,25 +90,54 @@
 <h1>Top 9 Manga Generator</h1>
 
 <div class="searchBox">
-<input id="searchInput" placeholder="만화 제목 검색">
-<button onclick="searchBooks()">검색</button>
+
+<input
+id="searchInput"
+placeholder="만화 제목 검색"
+/>
+
+<button onclick="searchBooks()">
+검색
+</button>
+
 </div>
 
-<div id="results" class="results"></div>
+<div
+id="results"
+class="results">
+</div>
 
 <h2>Your Top 9</h2>
 
-<div id="grid" class="grid"></div>
-
-<div class="controls">
-<button onclick="saveImage()">Save Image</button>
-<button onclick="shareURL()">Share URL</button>
-<button onclick="clearGrid()">Reset</button>
+<div
+id="grid"
+class="grid">
 </div>
 
-<canvas id="canvas" width="900" height="900"></canvas>
+<div class="controls">
+
+<button onclick="saveImage()">
+Save Image
+</button>
+
+<button onclick="shareURL()">
+Share URL
+</button>
+
+<button onclick="resetGrid()">
+Reset
+</button>
+
+</div>
+
+<canvas
+id="canvas"
+width="900"
+height="900">
+</canvas>
 
 <script src="script.js"></script>
 
 </body>
+
 </html>
